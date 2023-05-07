@@ -1,161 +1,9 @@
 var chartDom = document.getElementById('main');
 var myChart = echarts.init(chartDom);
 
-var upColor = '#ec0000';
-var downColor = '#00da3c';
-var dataTime = ["2004-01-02", "2004-01-05","2004-01-06", "2004-01-07", "2004-01-08","2004-01-09", "2004-01-12", "2004-01-13", "2004-01-14", "2004-01-15",];
-var dataMes = [
-  [ 10452.74, 10409.85, 10367.41, 10554.96 ],
-  [ 10411.85, 10544.07, 10411.85, 10575.92 ],
-  [ 10543.85, 10538.66, 10454.37, 10584.07 ],
-  [ 10535.46, 10529.03, 10432, 10587.55 ],
-  [ 10530.07, 10592.44, 10480.59, 10651.99 ],
-  [ 10589.25, 10458.89, 10420.52, 10603.48 ],
-  [ 10461.55, 10485.18, 10389.85, 10543.03 ],
-  [ 10485.18, 10427.18, 10341.19, 10539.25 ],
-  [ 10428.67, 10538.37, 10426.89, 10573.85 ],
-  [ 10534.52, 10553.85, 10454.52, 10639.03 ],
-]
-var volumeNum = [168890000, 221290000, 191460000, 225490000, 237770000, 223250000, 197960000, 197310000, 186280000, 260090000];//交易量
-
-var volumeData = []//交易量添加颜色判断
-for (var i = 0; i < dataMes.length; i++) {
-  volumeData.push([dataTime[i], volumeNum[i], dataMes[i][0] > dataMes[i][1] ? 1 : -1]);
-}
-
-var option = {
-  tooltip: {
-    trigger: 'axis',
-    axisPointer: {
-      type: 'cross',
-      link: {xAxisIndex: 'all'},//上下划过分开展示还是一起展示
-    },
-    textStyle: {
-      color: '#000'
-    },
-    formatter: function (params) {//修改鼠标划过显示为中文
-
-      if (params[0].componentSubType == "candlestick") {//先划过蜡烛图
-	var params1 = params[0];//开盘收盘最低最高数据汇总
-	var params2 = params[1].data[1];//成交量数据
-      } else if (params[0].componentSubType == "bar") {//先划过成交量
-	var params1 = params[1];//开盘收盘最低最高数据汇总
-	var params2 = params[0].data[1];//成交量数据
-      }
-
-      var currentItemData = params1.data;//k线数据
-      return params1.name + '<br>' +
-	'开盘价:' + currentItemData[1] + '<br>' +
-	'收盘价:' + currentItemData[2] + '<br>' +
-	'最低价:' + currentItemData[3] + '<br>' +
-	'最高价:' + currentItemData[4] + '<br>' +
-	'成交量:' + params2
-    }
-
-    // extraCssText: 'width: 170px'
-  },
-
-  axisPointer: {
-    link: {xAxisIndex: 'all'},//整体划过还是单个划过
-    label: {
-      backgroundColor: '#777'
-    }
-  },
-
-  visualMap: {//视觉映射组，就是将数据映射到视觉元素
-    show: false,
-    seriesIndex: 1,//指定取哪个系列的数据，第几个图形的数据，从0开始，1代表的是成交量的柱状图
-    pieces: [{//自定义『分段式视觉映射组件』的每一段的范围，以及每一段的文字，以及每一段的特别的样式
-      value: 1,//value值为1则用downColor颜色的样式
-      color: downColor
-    }, {
-      value: -1,
-      color: upColor
-    }]
-  },
-  grid: [
-    {//蜡烛图的位置
-      left: '10%',
-      right: '8%',
-      height: '50%'
-    },
-    {//成交量柱状图的位置
-      left: '10%',
-      right: '8%',
-      top: '63%',
-      height: '16%'
-    }
-  ],
-  xAxis: [
-    {//蜡烛图的设置
-      type: 'category',
-      data: dataTime,
-      scale: true,
-      //boundaryGap: false,
-      axisLine: {onZero: false},
-      splitLine: {show: false},
-      splitNumber: 20,
-      min: 'dataMin',
-      max: 'dataMax',
-      axisPointer: {
-	z: 100
-      },
-
-    },
-    {//成交量柱状图的设置
-      type: 'category',
-      gridIndex: 1,
-      data: dataTime,
-      scale: true,
-      //boundaryGap: false,
-      axisLine: {onZero: false},
-      axisTick: {show: false},
-      splitLine: {show: false},
-      axisLabel: {show: false},
-      splitNumber: 20,
-      min: 'dataMin',
-      max: 'dataMax'
-    }
-  ],
-  yAxis: [
-    {
-      scale: true,
-      splitArea: {
-	show: true
-      }
-    },
-    {
-      scale: true,
-      gridIndex: 1,
-      splitNumber: 2,
-      axisLabel: {show: false},
-      axisLine: {show: false},
-      axisTick: {show: false},
-      splitLine: {show: false}
-    }
-  ],
-
-  series: [{//蜡烛图的设置
-    type: 'candlestick',
-    data: dataMes,
-    barWidth : 10,//图形的宽度
-    itemStyle: {
-      color: upColor,
-      color0: downColor,
-      borderColor: null,
-      borderColor0: null
-    },
-  },
-    {//成交量柱状图的设置
-      name: 'Volume',
-      type: 'bar',
-      barWidth : 10,//柱状图的宽度
-      xAxisIndex: 1,
-      yAxisIndex: 1,
-      data: volumeData
-    }
-  ]
-};
+var dataTime = [];
+var dataMes = [];
+var volumeData = [];
 
 function calculateMA(cData, dayCount) {
 
@@ -191,7 +39,7 @@ function getChartOption(data) {
       }
     },
     legend: {
-	data: ['KLine', 'MA5']
+	data: ['KLine', 'MA5', 'MA20']
     },
     grid: [{
 	left: '3%',
@@ -309,19 +157,24 @@ function splitData(rawData) {
 
 var index = 0;
 var addOneDay = () => {
+    var items = window.fData.record.slice(index, index + 100);
+    var data = splitData(items);
 
-  /*
-  baseDay.setDate(baseDay.getDate() + 1);
-  dataTime.push(formatDatetime(baseDay));
-  dataMes.push([10534.52, 10553.85, 10454.52, 10639.03]);
-  volumeData.push([formatDatetime(baseDay), 260090000, 1]);
-  myChart.setOption(getChartOption(data));
-  */
+    var cOption = {
+	xAxis: [
+	    { data: data.times },
+	    { data: data.times }
+	],
+	series: [
+	    { data: data.datas},
+	    { data: calculateMA(data, 5)},
+	    { data: calculateMA(data, 20)},
+	    { data: data.vols}
+	]
+    };
 
-   var items = window.fData.record.slice(index, index + 100);
-   var cData = splitData(items);
-   myChart.setOption(getChartOption(cData));
-   index++;
+    myChart.setOption(cOption);
+    index++;
 }
 
 
@@ -343,7 +196,7 @@ new Vue({
   },
   created: function() {
    var type = "last";
-   var stock = "sz000002";
+   var stock = "sz002230";
    const URL = "/surfing.http/api.finance.ifeng.com/akdaily/";
 
    this.$http.get(URL, {params: {code: stock, type: type}}).then(response => {
