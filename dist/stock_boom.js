@@ -157,7 +157,7 @@ function splitData(rawData) {
 
 var index = 0;
 var addOneDay = () => {
-    var items = window.fData.record.slice(index, index + 100);
+    var items = window.fData.record.slice(index, index + 120);
     var data = splitData(items);
 
     var cOption = {
@@ -173,8 +173,8 @@ var addOneDay = () => {
 	]
     };
 
+    if (index + 120 < window.fData.record.length) index++;
     myChart.setOption(cOption);
-    index++;
 }
 
 
@@ -197,7 +197,11 @@ new Vue({
   created: function() {
    var type = "last";
    var stock = "sz002230";
+   var indexies = ["sz399971", "sz399989", "sz399997", "sh000807", "399441", "sh000687", "sh000685", "sz399438", "sz399359", "sz399973", "sz399995", "sh000906", "sz399699", "sz399030", "sz399231", "sh000941", "sh000808", "sh000932", "sz399967", "sz399928", "sh000949", "sz399440", "sz399808", "sz399986", "sh000978", "sz399976", "sz399998", "sh000819"];
    const URL = "/surfing.http/api.finance.ifeng.com/akdaily/";
+
+   var cone = Math.floor(Math.random() * indexies.length);
+   if (cone < indexies.length) stock = indexies[cone];
 
    this.$http.get(URL, {params: {code: stock, type: type}}).then(response => {
        const length = response.body.record.length;

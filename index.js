@@ -27,31 +27,25 @@ export default {
 		}
 
 		if (path.startsWith('/surfing.https/')) {
-			var okurl =  "https://" + path.substr(15);
-			var headers = req.headers;
+			var okurl =  request.url.replace(/.*surfing.https/, "https:/");
+			var headers = request.headers;
 			delete headers["Host"];
 
-			const reqInit = {method: req.method, headers: headers, redirect: 'manual',}
-			if (req.method === 'POST') {
-				reqInit.body = req.body
-			}
+			const reqInit = {method: request.method, headers: headers, redirect: 'manual'}
+			reqInit.body = request.body
 
-			const res = await fetch(okurl, reqInit);
-			return new Response(res.body, {status: res.status, headers: res.headers,});
+			return await fetch(okurl, reqInit);
 		}
 
 		if (path.startsWith('/surfing.http/')) {
-			var okurl =  "http://" + path.substr(14);
-			var headers = req.headers;
+			var okurl =  request.url.replace(/.*surfing.http/, "http:/");
+			var headers = request.headers;
 			delete headers["Host"];
 
-			const reqInit = {method: req.method, headers: headers, redirect: 'manual',}
-			if (req.method === 'POST') {
-				reqInit.body = req.body
-			}
+			const reqInit = {method: request.method, headers: headers, redirect: 'manual'}
+			reqInit.body = request.body
 
-			const res = await fetch(okurl, reqInit);
-			return new Response(res.body, {status: res.status, headers: res.headers,});
+			return await fetch(okurl, reqInit);
 		}
 
 		if (path.startsWith('/openai/')) {
