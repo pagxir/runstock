@@ -1,0 +1,13 @@
+name = "anti-reduce-holdings"
+main = "index.js"
+compatibility_date = "2023-05-08"
+
+workers_dev = true
+
+[vars]
+API_KEY = ""
+ORG_ID = ""
+
+
+[site]
+bucket = "./dist" 
