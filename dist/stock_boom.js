@@ -156,43 +156,47 @@ function splitData(rawData) {
 }
 
 var index = 0;
-var addOneDay = () => {
-    var items = window.fData.record.slice(index, index + 120);
-    var data = splitData(items);
-
-    var cOption = {
-	xAxis: [
-	    { data: data.times },
-	    { data: data.times }
-	],
-	series: [
-	    { data: data.datas},
-	    { data: calculateMA(data, 5)},
-	    { data: calculateMA(data, 20)},
-	    { data: data.vols}
-	]
-    };
-
-    if (index + 120 < window.fData.record.length) index++;
-    myChart.setOption(cOption);
-}
-
 
 new Vue({
   el: '#fxrate',
   data: function () {
-    this.chartSettings = {
-      digit: 4,
-      scale: [true, true],
-      offsetY: 5.0
-    }
+    return { stock: 0, money: 0, price: 0 }
+  },
+  methods: {
+    sell(event) {
+        if (this.stock > 0) {
+	    this.money += this.price;
+	    this.stock--;
+	}
+    },
+    buy(event) {
+	if (this.price > 0) {
+	    this.money -= this.price;
+	    this.stock++;
+	}
+    },
+    addOneDay() {
+      var items = window.fData.record.slice(index, index + 120);
+      if (index + 120 < window.fData.record.length) index++;
+      else items = window.fData.record;
+      var data = splitData(items);
 
-    this.chartExtend = {
-        series: {
-  	  symbol: "none"
-        }
+      var cOption = {
+	xAxis: [
+	  { data: data.times },
+	  { data: data.times }
+	],
+	series: [
+	  { data: data.datas},
+	  { data: calculateMA(data, 5)},
+	  { data: calculateMA(data, 20)},
+	  { data: data.vols}
+	]
+      };
+
+      this.price = data.datas[data.datas.length -1][1];
+      myChart.setOption(cOption);
     }
-    return { }
   },
   created: function() {
    var type = "last";
@@ -210,7 +214,8 @@ new Vue({
        var cData = splitData(response.body.record);
        myChart.setOption(getChartOption(cData));
        window.fData = response.body;
-       setInterval(addOneDay, 5000);
+       this.addOneDay();
+       setInterval(this.addOneDay.bind(this), 3000);
        // this.chartData.rows = response.body;
    }, response => {
        // error callback
