@@ -25,6 +25,21 @@ function calculateMA(cData, dayCount) {
   return result;
 }
 
+var theMarkPoints = [];
+function calculateMarkPoint(cData) {
+
+  var result = [];
+  var data = cData;
+
+  /*
+  for (var i = 0, len = data.times.length; i < len; i++) {
+      result.push({name: "max", value: "B", xAxis: data.times[i], yAxis: data.datas[i][1]});
+  }
+  */
+
+  return theMarkPoints;
+}
+
 function getChartOption(data) {
 
   var cOption = {
@@ -39,7 +54,7 @@ function getChartOption(data) {
       }
     },
     legend: {
-	data: ['KLine', 'MA5', 'MA20']
+	data: ['KLine', 'MA5', 'MA20', 'BS']
     },
     grid: [{
 	left: '3%',
@@ -99,7 +114,7 @@ function getChartOption(data) {
 	  normal: {
 	    opacity: 0.5
 	  }
-	}
+	},
       },{
 	name: 'MA20',
 	type: 'line',
@@ -109,6 +124,16 @@ function getChartOption(data) {
 	  normal: {
 	    opacity: 0.5
 	  }
+	},
+      },{
+	name: 'BS',
+	type: 'line',
+	data: [],
+	markPoint:  {
+		data: calculateMarkPoint(data),
+		label: {
+			formatter: '{c}'
+		}
 	}
       },{
 	name: 'Volumn',
@@ -165,13 +190,15 @@ new Vue({
   methods: {
     sell(event) {
         if (this.stock > 0) {
-	    this.money += this.price;
+	    this.money = this.money + parseFloat(this.price);
+	    theMarkPoints.push({name: "max", value: "S", xAxis: this.xAxis, yAxis: this.price});
 	    this.stock--;
 	}
     },
     buy(event) {
 	if (this.price > 0) {
-	    this.money -= this.price;
+	    this.money = this.money - parseFloat(this.price);
+	    theMarkPoints.push({name: "max", value: "B", xAxis: this.xAxis, yAxis: this.price});
 	    this.stock++;
 	}
     },
@@ -190,11 +217,13 @@ new Vue({
 	  { data: data.datas},
 	  { data: calculateMA(data, 5)},
 	  { data: calculateMA(data, 20)},
+	  { markPoint: { data: calculateMarkPoint(data) }},
 	  { data: data.vols}
 	]
       };
 
       this.price = data.datas[data.datas.length -1][1];
+      this.xAxis = data.times[data.datas.length -1];
       myChart.setOption(cOption);
     }
   },
@@ -215,7 +244,7 @@ new Vue({
        myChart.setOption(getChartOption(cData));
        window.fData = response.body;
        this.addOneDay();
-       setInterval(this.addOneDay.bind(this), 3000);
+       setInterval(this.addOneDay.bind(this), 5000);
        // this.chartData.rows = response.body;
    }, response => {
        // error callback
