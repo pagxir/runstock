@@ -25,6 +25,39 @@ function calculateMA(cData, dayCount) {
   return result;
 }
 
+function getTR(items, refclose)
+{
+    // open, close, low, high
+
+    var low = parseFloat(items[2]);
+    var high = parseFloat(items[3]);
+    var closeref = parseFloat(refclose);
+    
+    if (closeref < low) low = closeref;
+    if (closeref > high) high = closeref;
+    return high - low;
+}
+
+function calculateATR(cData, dayCount) {
+
+  var sum = 0;
+  var result = [];
+  var data = cData;
+
+  for (var i = 0, len = data.times.length; i < len; i++) {
+      if (i < dayCount) {
+	sum += getTR(data.datas[i], i > 1? data.datas[i - 1][1]: data.datas[0][1]);
+	result.push('-');
+	continue;
+      }
+
+      sum += (getTR(data.datas[i], data.datas[i - 1][1]) - getTR(data.datas[i - dayCount], i > dayCount + 1? data.datas[i - dayCount -1][1]: data.datas[0][1]));
+      result.push((parseFloat(data.datas[i][1]) - 2 * (sum / dayCount)).toFixed(2));
+  }
+
+  return result;
+}
+
 var theMarkPoints = [];
 var curMarkPoint = {};
 var newMarkPoint = false;
@@ -62,7 +95,7 @@ function getChartOption(data) {
       }
     },
     legend: {
-	data: ['KLine', 'MA5', 'MA20', 'BS']
+	data: ['KLine', 'MA5', 'MA20', 'ATR', 'BS']
     },
     grid: [{
 	left: '3%',
@@ -127,6 +160,16 @@ function getChartOption(data) {
 	name: 'MA20',
 	type: 'line',
 	data: calculateMA(data, 20),
+	smooth: true,
+	lineStyle: {
+	  normal: {
+	    opacity: 0.5
+	  }
+	},
+      },{
+	name: 'ATR',
+	type: 'line',
+	data: calculateATR(data, 13),
 	smooth: true,
 	lineStyle: {
 	  normal: {
@@ -233,6 +276,7 @@ new Vue({
 	  { data: data.datas},
 	  { data: calculateMA(data, 5)},
 	  { data: calculateMA(data, 20)},
+	  { data: calculateATR(data, 13)},
 	  { markPoint: { data: calculateMarkPoint(data) }},
 	  { data: data.vols}
 	]
