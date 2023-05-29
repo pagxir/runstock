@@ -52,7 +52,7 @@ function calculateATR(cData, dayCount) {
       }
 
       sum += (getTR(data.datas[i], data.datas[i - 1][1]) - getTR(data.datas[i - dayCount], i > dayCount + 1? data.datas[i - dayCount -1][1]: data.datas[0][1]));
-      result.push((parseFloat(data.datas[i][1]) - 2 * (sum / dayCount)).toFixed(2));
+      result.push((parseFloat(data.datas[i][3]) - 2 * (sum / dayCount)).toFixed(2));
   }
 
   return result;
@@ -247,6 +247,14 @@ new Vue({
 	    this.stock--;
 	}
     },
+    short(event) {
+        if (this.stock <= 0) {
+	    this.money = this.money + parseFloat(this.price);
+	    curMarkPoint = {name: "max", value: "s", xAxis: this.xAxis, yAxis: this.price};
+	    newMarkPoint = true;
+	    this.stock--;
+	}
+    },
     buy(event) {
 	if (this.price > 0) {
 	    this.money = this.money - parseFloat(this.price);
@@ -257,8 +265,8 @@ new Vue({
 	}
     },
     stopLimit(event) {
-	if (this.advStopLimit && parseFloat(this.advStopLimit) > 0) {
-	   this.curStopLimit = parseFloat(this.advStopLimit);
+	if (this.advStopLimit && this.advStopLimit > 0) {
+	   this.curStopLimit = this.advStopLimit;
 	}
     },
     addOneDay() {
@@ -282,26 +290,26 @@ new Vue({
 	]
       };
 
-      this.price = data.datas[data.datas.length -1][1];
-      this.advStopLimit = data.datas[data.datas.length -1][2];
+      var sPlots = data.datas[data.datas.length -1];
+      var dPlots = {open: parseFloat(sPlots[0]), close: parseFloat(sPlots[1]), low: parseFloat(sPlots[2]), high: parseFloat(sPlots[3])};
+
+      this.price = dPlots.close;
+      this.advStopLimit = dPlots.low;
       this.xAxis = data.times[data.datas.length -1];
 
-      var lowbound = parseFloat(data.datas[data.datas.length -1][0]);
-      if (lowbound > parseFloat(this.price)) {
-	  lowbound = parseFloat(this.price);
-      }
+      var lowMark = dPlots.close > dPlots.open? dPlots.open: dPlots.close;
+      var atr = calculateATR(data, 13)[data.datas.length - 1];
+      if (atr == '-') atr = 0;
 
-      if (lowbound * 0.99 > parseFloat(this.advStopLimit)) {
-	  this.advStopLimit = lowbound * 0.99;
+      if (lowMark * 0.99 > this.advStopLimit) {
+	  this.advStopLimit = atr;
       } else {
-	  this.advStopLimit = (parseFloat(this.advStopLimit) + lowbound * 0.99) / 2;
+	  this.advStopLimit = atr;
       }
 
-      if (this.curStopLimit > 0 && this.advStopLimit  < this.curStopLimit && this.stock > 0) {
+      if (this.curStopLimit > 0 && dPlots.low < this.curStopLimit && this.stock > 0) {
 	theMarkPoints.push({name: "max", value: "!", xAxis: this.xAxis, yAxis: this.price});
-	var highMark = parseFloat(data.datas[data.datas.length -1][0]);
-	var thisPrice = parseFloat(this.price);
-	this.money = this.money + this.stock * (highMark < thisPrice? highMark: thisPrice);
+	this.money = this.money + this.stock * (this.open < this.curStopLimit? this.open: this.curStopLimit);
 	this.curStopLimit = 0;
 	this.stock = 0;
       }
